@@ -1,0 +1,26 @@
+{
+  "name": "billbox-backend",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "prisma": "prisma"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.862.0",
+    "@aws-sdk/s3-request-presigner": "^3.862.0",
+    "@prisma/client": "^6.13.0",
+    "axios": "^1.11.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^3.0.1",
+    "mongoose": "^8.17.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22",
+    "prisma": "^6.13.0"
+  }
+}

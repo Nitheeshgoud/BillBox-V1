@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Add new Bill model
+model Bill {
+  id            String   @id @default(uuid())
+  storeId       String   // Link to specific store
+  vendorId      String   // Link to vendor (redundant but useful for queries)
+  customerEmail String
+  amount        Decimal?
+  filename      String
+  s3Key         String   // S3 object key
+  metadata      Json?    // Extracted bill metadata
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  store         Store    @relation(fields: [storeId], references: [id])
+  vendor        Vendor   @relation(fields: [vendorId], references: [id])
+  
+  @@index([storeId])
+  @@index([vendorId])
+  @@index([customerEmail])
+}
+
+// Update Store model to include bills relationship
+model Store {
+  id            String   @id @default(uuid())
+  vendorId      String
+  name          String
+  address       String
+  phone         String
+  type          String
+  whatsappOptIn Boolean
+  workingHours  String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  vendor        Vendor   @relation(fields: [vendorId], references: [id])
+  bills         Bill[]   // Add this relationship
+  @@index([vendorId])
+}
+
+// Update Vendor model to include bills relationship
+model Vendor {
+  id            String   @id @default(uuid())
+  cognitoUserId String   @unique
+  fullName      String
+  phone         String
+  email         String
+  businessType  String
+  gstin         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  stores        Store[]
+  bills         Bill[]   // Add this relationship
+}
