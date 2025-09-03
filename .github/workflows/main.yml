@@ -3,7 +3,7 @@ name: Frontend - Deploy to S3
 on:
   push:
     branches:
-      - main   # or main (check your repo default branch)
+      - main   # change to master if your repo uses master
 
 jobs:
   build-and-deploy:
@@ -19,12 +19,14 @@ jobs:
         node-version: '20'
 
     - name: Install dependencies
-      run: npm install
-      working-directory: ./frontend   
+      working-directory: ./frontend
+      run: |
+        npm install
+        npm install --save-dev terser
 
     - name: Build the project
+      working-directory: ./frontend
       run: npm run build
-      working-directory: ./frontend   
 
     - name: Deploy to S3
       env:
