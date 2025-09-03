@@ -35,7 +35,7 @@ app.post('/api/register', async (req, res) => {
     }
 
     const newUser = await User.create({ username, email, password, role });
-    const token = jwt.sign({ id: newUser._id }, 'Hello', { expiresIn: '1h' });
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET || 'Hello', { expiresIn: '1h' });
 
     res.status(201).json({ message: 'User registered successfully', token, role: newUser.role });
   } catch (error) {
@@ -53,13 +53,20 @@ app.post('/api/login',async(req,res)=>{
     if(!user){
       return res.status(400).json({error:'User not found'});
     }
+    
+    // Validate password
+    if(user.password !== password){
+      return res.status(400).json({error:'Invalid credentials'});
+    }
+    
     const role = user.role;
     const username = user.username;
-    const token = jwt.sign({id:user._id},'Hello',{expiresIn:'1h'});
+    const token = jwt.sign({id:user._id}, process.env.JWT_SECRET || 'Hello',{expiresIn:'1h'});
     res.status(200).json({message:'Login successful',token,role,username});
   }
   catch(err){
-    res.status(500).json({error:'Failed to register customer'})
+    console.error('Login error:', err);
+    res.status(500).json({error:'Login failed'})
   }
 })
 //app.use('/api/customer', customerRoutes);

@@ -43,11 +43,49 @@ const CustomerDashboard = () => {
 
   useEffect(() => {
     if (role === 'customer') {
-      // TODO: Implement bills fetching from your backend
+      const fetchBills = async () => {
+        try {
+          const response = await fetch('/api/bills', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          const data = await response.json();
+          setBills(data);
+          setLoading(false);
+        } catch (error) {
+          console.error('Error fetching bills:', error);
+          toast.error('Failed to fetch bills');
+        }
+      };
+      fetchBills();
     }
-  }, [role]);
+  }, [role, token]);
 
-  // TODO: Implement fetchBills and calculateStats functions
+  useEffect(() => {
+    const calculateStats = () => {
+      const totalBills = bills.length;
+      const totalSpent = bills.reduce((acc, bill) => acc + (bill.amount || 0), 0);
+      const monthlySpent = bills.filter(bill => {
+        const date = new Date(bill.purchase_date);
+        const month = date.getMonth();
+        const year = date.getFullYear();
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+        return month === currentMonth && year === currentYear;
+      }).reduce((acc, bill) => acc + (bill.amount || 0), 0);
+      const vendorCount = [...new Set(bills.map(bill => bill.vendor_email))].length;
+      setStats({
+        totalBills,
+        totalSpent,
+        monthlySpent,
+        vendorCount
+      });
+    };
+    calculateStats();
+  }, [bills]);
 
   const handleDownload = async (bill: Bill) => {
     try {

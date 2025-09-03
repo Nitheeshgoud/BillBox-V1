@@ -40,12 +40,12 @@ const VendorSchema = new mongoose.Schema({
   },
   storePhone: {
     type: String,
-    required: false,
+    required: true,
     trim: true
   },
   storeType: {
     type: String,
-    required: false,
+    required: true,
     trim: true
   },
   whatsappOptIn: {
@@ -54,7 +54,7 @@ const VendorSchema = new mongoose.Schema({
   },
   workingHours: {
     type: String,
-    required: false,
+    required: true,
     trim: true
   }
 }, { timestamps: true });

@@ -74,15 +74,22 @@ const VendorRegistration = () => {
   useEffect(() => {
     // Check if user is already registered
     checkRegistrationStatus();
-  }, []);
+    // Set email from auth context if available
+    if (username) {
+      setFormData(prev => ({ ...prev, email: username }));
+    }
+  }, [username]);
 
   const checkRegistrationStatus = async () => {
     try {
       if (!token) {
+        console.log('No token found, redirecting to login');
         navigate('/login');
         return;
       }
   
+      console.log('Checking registration status with token:', token?.substring(0, 20) + '...');
+      
       const response = await fetch('http://localhost:5050/api/vendor/isregistered', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -166,9 +173,13 @@ const VendorRegistration = () => {
 
     try {
       if (!token) {
+        console.log('No token found during registration, redirecting to login');
         navigate('/login');
         return;
       }
+
+      console.log('Submitting registration with token:', token?.substring(0, 20) + '...');
+      console.log('Form data being sent:', formData);
 
       const response = await fetch('http://localhost:5050/api/vendor/register', {
         method: 'POST',
@@ -184,7 +195,23 @@ const VendorRegistration = () => {
         navigate('/vendor-dashboard');
       } else {
         const errorData = await response.json();
-        toast.error(errorData.error || 'Registration failed');
+        console.error('Registration failed:', errorData);
+        
+        if (errorData.details && Array.isArray(errorData.details)) {
+          // Handle validation errors
+          const errorMessages = errorData.details.map((err: any) => `${err.field}: ${err.message}`).join(', ');
+          toast.error(`Registration failed: ${errorMessages}`);
+        } else if (errorData.details && typeof errorData.details === 'object') {
+          // Handle missing field errors
+          const missingFields = Object.keys(errorData.details).filter(key => errorData.details[key]);
+          if (missingFields.length > 0) {
+            toast.error(`Missing required fields: ${missingFields.join(', ')}`);
+          } else {
+            toast.error(errorData.error || 'Registration failed');
+          }
+        } else {
+          toast.error(errorData.error || 'Registration failed');
+        }
       }
     } catch (error) {
       console.error('Registration error:', error);
@@ -264,10 +291,12 @@ const VendorRegistration = () => {
                   <Input
                     id="email"
                     value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    placeholder="Enter your email"
                     className="bg-muted"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Email is fetched from your Cognito account
+                    Email is fetched from your account
                   </p>
                 </div>
 
